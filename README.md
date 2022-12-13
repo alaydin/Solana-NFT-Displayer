@@ -1,3 +1,7 @@
+In the following you can find more about Scaffold, I have completed some of the template codes.
+Changes are in:
+src/components/FetchNft.tsx
+src/components/FetchCandyMachine.tsx
 
 # Solana dApp Scaffold Next
 
