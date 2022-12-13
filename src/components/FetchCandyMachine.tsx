@@ -5,18 +5,70 @@ import { FC, useEffect, useState } from "react"
 import styles from "../styles/custom.module.css"
 
 export const FetchCandyMachine: FC = () => {
-  const [candyMachineAddress, setCandyMachineAddress] = useState(null)
+  const [candyMachineAddress, setCandyMachineAddress] = useState("FFGdgJdn1G6wn3VsJ7ERg6LSUmEJ6LUD3Wp5skLKHTY9")
   const [candyMachineData, setCandyMachineData] = useState(null)
   const [pageItems, setPageItems] = useState(null)
   const [page, setPage] = useState(1)
 
-  const fetchCandyMachine = async () => {}
+  const { connection } = useConnection()
+  const metaplex = Metaplex.make(connection)
 
-  const getPage = async (page, perPage) => {}
+  const fetchCandyMachine = async () => {
+    setPage(1);
 
-  const prev = async () => {}
+    try {
 
-  const next = async () => {}
+      const candyMachine = await metaplex.candyMachines().findByAddress({ address: new PublicKey(candyMachineAddress) }).run()
+      console.log(candyMachine.items);
+      setCandyMachineData(candyMachine);
+    }
+    catch {
+      alert("Please submit a valid CMv2 address.")
+    }
+  }
+
+  const getPage = async (page, perPage) => {
+    const pageItems = candyMachineData.items.slice(
+      (page - 1) * perPage,
+      page * perPage
+    )
+
+    const nftData = pageItems.map(async (nft) => {
+      let fetchResult = await fetch(nft.uri)
+      let json = await fetchResult.json()
+      console.log("json:", json)
+      return json
+    })
+    setPageItems(nftData)
+    pageItems.forEach(element => {
+      console.log(element);
+      console.log(element.uri);
+    });
+  }
+
+  const prev = async () => {
+    if (page - 1 < 1) {
+      setPage(1)
+    }
+    else {
+      setPage(page - 1)
+    }
+  }
+
+  const next = async () => {
+    setPage(page + 1)
+  }
+
+  useEffect(() => {
+    fetchCandyMachine()
+  }, [])
+
+  useEffect(() => {
+    if (!candyMachineData) {
+      return
+    }
+    getPage(page, 9)
+  }, [candyMachineData, page])
 
   return (
     <div>
@@ -44,8 +96,8 @@ export const FetchCandyMachine: FC = () => {
           <div className={styles.gridNFT}>
             {pageItems.map((nft) => (
               <div>
-                <ul>{nft.name}</ul>
-                <img src={nft.image} />
+                <ul>name: {nft.name}</ul>
+                <img src={nft.uri} />
               </div>
             ))}
           </div>
